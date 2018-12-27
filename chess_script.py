@@ -36,6 +36,8 @@ if __name__ == '__main__':
 
 	game = ChessGame(my_motion)
 
+
+	# Main loop
 	def repeater(root):
 		game.display(the_canvas)
 		root.after(20,repeater,root)

@@ -5,7 +5,7 @@ import chess_script
 class ChessGame:
 	def __init__(self, my_motion):
 		self.gamestate = ChessModel()
-		self.mouse_pos = my_motion	# Stores the object
+		self.mouse_pos = my_motion	# Stores the position of the mouse relative to the canvas
 
 
 	def display(self, the_canvas):
@@ -29,7 +29,7 @@ class ChessGame:
 			if self.gamestate:
 				self.gamestate = None
 				the_canvas.unbind("<ButtonPress>")
-			self.end_game(the_canvas, w, chess_model.WINNER)
+			self.draw_end_game(the_canvas, w, chess_model.WINNER)
 
 
 
@@ -59,10 +59,10 @@ class ChessGame:
 								else:
 									the_canvas.create_oval(dcol*sh + sh/2.5,w-(drow*sh + sh/2.5),dcol*sh+sh - sh/2.5,w-(drow*sh+sh - sh/2.5),fill='OliveDrab4',outline='OliveDrab4')
 							else:
-								if type(self.gamestate.board[dcol][drow]) is not King:
-									the_canvas.create_rectangle(dcol*sh,w-(drow*sh),dcol*sh+sh,w-(drow*sh+sh),fill='brown3',outline='brown3')
-								else:
-									the_canvas.create_rectangle(dcol*sh,w-(drow*sh),dcol*sh+sh,w-(drow*sh+sh),fill='steelblue3',outline='steelblue3')
+								#if type(self.gamestate.board[dcol][drow]) is not King:
+								the_canvas.create_rectangle(dcol*sh,w-(drow*sh),dcol*sh+sh,w-(drow*sh+sh),fill='brown3',outline='brown3')
+								#else:
+									#the_canvas.create_rectangle(dcol*sh,w-(drow*sh),dcol*sh+sh,w-(drow*sh+sh),fill='steelblue3',outline='steelblue3')
 
 
 
@@ -71,7 +71,8 @@ class ChessGame:
 			for row in range(8):
 				piece = self.gamestate.board[col][row]
 				if piece:
-					the_canvas.create_oval(col*sh + sh/5,w - (row*sh + sh/5),col*sh+sh - sh/5,w - (row*sh+sh - sh/5),fill=piece.color,outline=piece.color)
+					# Call display on each piece
+					piece.display(col*sh + sh/2 - 1, w - (row*sh + sh/2), the_canvas)
 
 
 
@@ -84,8 +85,8 @@ class ChessGame:
 		return square_color
 
 
-	def end_game(self, the_canvas, w, winner):
-
+	def draw_end_game(self, the_canvas, w, winner):
+		"""Draws the end game screen (shows who won)"""
 		if winner is white:
 			winner_text = 'white'
 			the_canvas.configure(background='gray10')
@@ -95,6 +96,6 @@ class ChessGame:
 			the_canvas.configure(background='ghost white')
 			text_fill = 'gray10'
 		text = f"{winner_text}  wins"
-		the_canvas.create_text(w/2 - len(text)/2, w/2-10,fill=text_fill,font=('Herculanum', 50),
+		the_canvas.create_text(w/2 - len(text)/2, w/2-15,fill=text_fill,font=('Herculanum', 50),
                     	text=text)
 

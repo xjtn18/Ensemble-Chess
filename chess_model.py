@@ -3,7 +3,6 @@ from math import floor
 from chess_sound import *
 
 # Global
-#global white,black
 CURRENT_PLAYER = white
 WINNER = None
 
@@ -13,10 +12,12 @@ class ChessModel:
 
 	def __init__(self):
 		self.board = self.create_board()
-		self.selection = None
-		self.destination = None
+		self.selection = None # stores a tuple of the array position of the selected piece
+		self.destination = None # stores a tuple of the array position of the destination
 
 	def create_board(self):
+		"""Returns a 2D array where None is an empty square and occupied squares
+		hold chess piece objects."""
 		board = [[None]*8 for i in range(8)]
 
 		for i in range(8):
@@ -46,13 +47,14 @@ class ChessModel:
 
 
 	def update(self):
+		"""Takes selected and destination and moves the piece to the destination"""
 		scol,srow = self.selection
 		dcol,drow = self.destination
 
 		self.check_game_over(dcol, drow)
 
-		self.board[dcol][drow] = self.board[scol][srow] 
-		self.board[scol][srow] = None
+		self.board[dcol][drow] = self.board[scol][srow] # moves selected to destination
+		self.board[scol][srow] = None # removes where the piece previously was
 
 		self.selection, self.destination = None, None
 		self.change_current_move()
@@ -60,6 +62,7 @@ class ChessModel:
 
 
 	def change_current_move(self):
+		"""Switches the turn after a play has been made"""
 		global CURRENT_PLAYER
 		if CURRENT_PLAYER == white:
 			CURRENT_PLAYER = black
@@ -68,46 +71,52 @@ class ChessModel:
 
 
 	def mouse_click(self,x,y):
+		"""Takes the mouse click coordinates and converts it to a position in the
+		2D array. Changes selected piece and calls update if valid destination is clicked."""
 		global CURRENT_PLAYER
-		square = (floor(x/75),floor((600-y)/75)) # hard coded based on canvas size
+		square = (floor((x)/75),floor((600-y)/75)) # hard coded based on canvas size
 		col, row = square
-		try:
+
+		# Prevents wierd cases where pressing the edge of the canvas creates indexes
+			# not in the array.
+		if 0 <= col <= 7 and 0 <= row <= 7:
 			clicked = self.board[col][row]
-		except IndexError:
+		else:
 			return
 
 
-		if self.selection:
+		if self.selection:	# if a piece has been selected
 			scol, srow = self.selection
 			selected = self.board[scol][srow]
 
-			if square == self.selection:
+			if square == self.selection:	# If clicked square is same as selected, remove selection
 				self.selection = None
-			else:
-				if clicked and clicked.color == CURRENT_PLAYER:
+			else:	# clicked square is not the already selected one
+				if clicked and clicked.color == CURRENT_PLAYER:	# clicked square is just another selection
 					self.selection = square
 					s_select_cm.stop()
 					s_select.play()
 
-				elif square in selected.valid_placements(scol, srow, self.board):
+				elif square in selected.valid_placements(scol, srow, self.board): # clicked square is a valid placement
 					self.destination = (col,row)
 					s_select_cm.stop()
 					s_move.play()
-					self.update()
+					self.update() # move the piece to the destination
 
-				else:
+				else: # clicked square 
 					pass
 					# play error sound
 
-		elif clicked and clicked.color == CURRENT_PLAYER:
+		elif clicked and clicked.color == CURRENT_PLAYER: # if there is no selected piece and clicked is a current players piece
 			self.selection = square
 			s_select.play()
 
-		self.check_for_mate()
+		self.check_for_mate() # after making a selection, check if the other players king is in position
 
 
 
 	def check_for_mate(self):
+		"""Checks if the other players king is in valid placements of selected."""
 		if self.selection:
 			scol,srow = self.selection
 			for dcol,drow in self.board[scol][srow].valid_placements(scol,srow, self.board):
@@ -119,12 +128,14 @@ class ChessModel:
 
 
 	def check_game_over(self, dcol, drow):
+		"""If destination was a king, end game"""
 		if type(self.board[dcol][drow]) is King:
 			self.game_over()
 
 
 
 	def game_over(self):
+		"""Sets winner equal to whoever took a King"""
 		global WINNER
 		WINNER = CURRENT_PLAYER
 		#s_win.play()

@@ -1,13 +1,26 @@
 import chess_model
+from PIL.ImageTk import PhotoImage
+from PIL import Image
+
 
 white = 'ghost white'
 black = 'gray15'
+
+
+"""
+All pieces:
+	valid_placements method returns a list of tuples containing positions in the 2D array
+	display method gets passed the_canvas and draw whatever is stored in self._image
+"""
 
 
 class Pawn:
 
 	def __init__(self, color):
 		self.color = color
+		image = Image.open(f'piece_images/pawn_{get_piece_color(color)}.png')
+		image = image.resize((75, 75), Image.ANTIALIAS)
+		self._image = PhotoImage(image)
 
 	def valid_placements(self, col, row, board):
 		placements = []
@@ -33,12 +46,20 @@ class Pawn:
 
 		return placements
 
+	def display(self,x,y, the_canvas):
+		the_canvas.create_image(x,y, image=self._image)
+
+
 
 
 class Rook:
 
 	def __init__(self, color):
 		self.color = color
+		image = Image.open(f'piece_images/rook_{get_piece_color(color)}.png')
+		image = image.resize((75, 75), Image.ANTIALIAS)
+		self._image = PhotoImage(image)
+
 
 	def valid_placements(self, col, row, board):
 		placements = []
@@ -57,12 +78,20 @@ class Rook:
 					break
 		return placements
 
+	def display(self,x,y, the_canvas):
+		the_canvas.create_image(x,y, image=self._image)
+
+
 
 
 class Bishop:
 
 	def __init__(self, color):
 		self.color = color
+		image = Image.open(f'piece_images/bishop_{get_piece_color(color)}.png')
+		image = image.resize((75, 75), Image.ANTIALIAS)
+		self._image = PhotoImage(image)
+
 
 	def valid_placements(self, col, row, board):
 		placements = []
@@ -81,12 +110,20 @@ class Bishop:
 					break
 		return placements
 
+	def display(self,x,y, the_canvas):
+		the_canvas.create_image(x,y, image=self._image)
+
+
 
 
 class Knight:
 
 	def __init__(self, color):
 		self.color = color
+		image = Image.open(f'piece_images/knight_{get_piece_color(color)}.png')
+		image = image.resize((75, 75), Image.ANTIALIAS)
+		self._image = PhotoImage(image)
+
 
 	def valid_placements(self, col, row, board):
 		placements = []
@@ -102,16 +139,28 @@ class Knight:
 
 		return placements
 
+	def display(self,x,y, the_canvas):
+		the_canvas.create_image(x,y, image=self._image)
+
+
 
 
 class Queen(Rook, Bishop):
 
 	def __init__(self, color):
 		self.color = color
+		image = Image.open(f'piece_images/queen_{get_piece_color(color)}.png')
+		image = image.resize((75, 75), Image.ANTIALIAS)
+		self._image = PhotoImage(image)
+
 
 	def valid_placements(self, col, row, board):
 		placements = Rook.valid_placements(self, col, row, board) + Bishop.valid_placements(self, col, row, board)
 		return placements
+
+	def display(self,x,y, the_canvas):
+		the_canvas.create_image(x,y, image=self._image)
+
 
 
 
@@ -119,10 +168,26 @@ class King(Queen):
 
 	def __init__(self, color):
 		self.color = color
+		image = Image.open(f'piece_images/king_{get_piece_color(color)}.png')
+		image = image.resize((75, 75), Image.ANTIALIAS)
+		self._image = PhotoImage(image)
+
 
 	def valid_placements(self, col, row, board):
 		placements = Queen.valid_placements(self, col, row, board)
 		placements = filter(lambda spot: -1 <= spot[0] - col <= 1 and -1 <= spot[1] - row <= 1, placements)
 		return placements
+
+	def display(self,x,y, the_canvas):
+		the_canvas.create_image(x,y, image=self._image)
+
+
+def get_piece_color(color):
+	"""returns the string white or black instead of the tkinter color name normally stored"""
+	if color is white:
+		return 'white'
+	else:
+		return 'black'
+
 
 
