@@ -1,5 +1,6 @@
 from tkinter import Tk,Canvas
 from chess_view import *
+from chess_sound import *
 
 #Globals
 
@@ -19,7 +20,7 @@ class Motion:
 
 if __name__ == '__main__':
 	root = Tk()
-	root.title("Jake Chess")
+	root.title("Jake n Ha Chess")
 	root.protocol("WM_DELETE_WINDOW",quit)
 	root.resizable(False, False)
 

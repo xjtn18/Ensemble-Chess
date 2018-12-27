@@ -5,23 +5,31 @@ import chess_script
 class ChessGame:
 	def __init__(self, my_motion):
 		self.gamestate = ChessModel()
-		self.mouse_pos = my_motion
+		self.mouse_pos = my_motion	# Stores the object
+
 
 	def display(self, the_canvas):
+		"""Displays everything on the canvas"""
 		for o in the_canvas.find_all():
 			the_canvas.delete(o)
 
 		w = the_canvas.winfo_height()
 		sh = w/8
 
-		if self.gamestate.winner is None:
+
+		# This block displays the board and pieces (the game is still playing)
+		if self.gamestate and not chess_model.WINNER:
 			self.draw_board(the_canvas, w, sh)
 			self.draw_hints(the_canvas, w, sh)
 			self.draw_pieces(the_canvas, w, sh)
 
+		#This block, when first executed, deletes the gamestate; then it repeatedly
+			# displays the game over screen
 		else:
-			pass
-
+			if self.gamestate:
+				self.gamestate = None
+				the_canvas.unbind("<ButtonPress>")
+			self.end_game(the_canvas, w, chess_model.WINNER)
 
 
 
@@ -37,7 +45,7 @@ class ChessGame:
 
 	def draw_hints(self, the_canvas, w, sh):
 		"""Draws hint colors that show selected, destinations, and captures"""
-		if self.gamestate.selection != None:
+		if self.gamestate.selection:
 			for col in range(8):
 				for row in range(8):
 					if (col, row) == self.gamestate.selection:
@@ -51,14 +59,18 @@ class ChessGame:
 								else:
 									the_canvas.create_oval(dcol*sh + sh/2.5,w-(drow*sh + sh/2.5),dcol*sh+sh - sh/2.5,w-(drow*sh+sh - sh/2.5),fill='OliveDrab4',outline='OliveDrab4')
 							else:
-								the_canvas.create_rectangle(dcol*sh,w-(drow*sh),dcol*sh+sh,w-(drow*sh+sh),fill='brown3',outline='brown3')
+								if type(self.gamestate.board[dcol][drow]) is not King:
+									the_canvas.create_rectangle(dcol*sh,w-(drow*sh),dcol*sh+sh,w-(drow*sh+sh),fill='brown3',outline='brown3')
+								else:
+									the_canvas.create_rectangle(dcol*sh,w-(drow*sh),dcol*sh+sh,w-(drow*sh+sh),fill='steelblue3',outline='steelblue3')
+
 
 
 	def draw_pieces(self, the_canvas, w, sh):
 		for col in range(8):
 			for row in range(8):
 				piece = self.gamestate.board[col][row]
-				if piece != None:
+				if piece:
 					the_canvas.create_oval(col*sh + sh/5,w - (row*sh + sh/5),col*sh+sh - sh/5,w - (row*sh+sh - sh/5),fill=piece.color,outline=piece.color)
 
 
@@ -71,4 +83,18 @@ class ChessGame:
 			square_color = 'burlywood3'
 		return square_color
 
+
+	def end_game(self, the_canvas, w, winner):
+
+		if winner is white:
+			winner_text = 'white'
+			the_canvas.configure(background='gray10')
+			text_fill = 'ghost white'
+		else:
+			winner_text = 'black'
+			the_canvas.configure(background='ghost white')
+			text_fill = 'gray10'
+		text = f"{winner_text}  wins"
+		the_canvas.create_text(w/2 - len(text)/2, w/2-10,fill=text_fill,font=('Herculanum', 50),
+                    	text=text)
 

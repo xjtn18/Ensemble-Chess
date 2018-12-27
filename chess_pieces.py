@@ -1,5 +1,5 @@
+import chess_model
 
-# Global
 white = 'ghost white'
 black = 'gray15'
 
@@ -49,7 +49,7 @@ class Rook:
 					spot = board[ncol][nrow]
 					placements.append((ncol, nrow))
 					ncol,nrow = ncol + d[0], nrow + d[1]
-					if spot != None:
+					if spot:
 						if spot.color == self.color:
 							placements.remove((ncol - d[0],nrow - d[1]))
 						break
@@ -73,7 +73,7 @@ class Bishop:
 					spot = board[ncol][nrow]
 					placements.append((ncol, nrow))
 					ncol,nrow = ncol + d[0], nrow + d[1]
-					if spot != None:
+					if spot:
 						if spot.color == self.color:
 							placements.remove((ncol - d[0],nrow - d[1]))
 						break
@@ -96,7 +96,7 @@ class Knight:
 				spot = board[ncol][nrow]
 				placements.append((ncol, nrow))
 				ncol,nrow = ncol + d[0], nrow + d[1]
-				if spot != None:
+				if spot:
 					if spot.color == self.color:
 						placements.remove((ncol - d[0],nrow - d[1]))
 

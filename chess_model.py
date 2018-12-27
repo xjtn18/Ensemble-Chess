@@ -3,8 +3,11 @@ from math import floor
 from chess_sound import *
 
 # Global
-global white,black
+#global white,black
 CURRENT_PLAYER = white
+WINNER = None
+
+
 
 class ChessModel:
 
@@ -12,10 +15,8 @@ class ChessModel:
 		self.board = self.create_board()
 		self.selection = None
 		self.destination = None
-		self.winner = None
 
 	def create_board(self):
-		global white, black
 		board = [[None]*8 for i in range(8)]
 
 		for i in range(8):
@@ -47,9 +48,8 @@ class ChessModel:
 	def update(self):
 		scol,srow = self.selection
 		dcol,drow = self.destination
-		if type(self.board[dcol][drow]) is King:
-			self.game_over()
-			return
+
+		self.check_game_over(dcol, drow)
 
 		self.board[dcol][drow] = self.board[scol][srow] 
 		self.board[scol][srow] = None
@@ -57,22 +57,19 @@ class ChessModel:
 		self.selection, self.destination = None, None
 		self.change_current_move()
 
-		#self.check_game_over()
 
 
 	def change_current_move(self):
-		global white, black, CURRENT_PLAYER
+		global CURRENT_PLAYER
 		if CURRENT_PLAYER == white:
 			CURRENT_PLAYER = black
 		else:
 			CURRENT_PLAYER = white
-		my_sound.play('sounds/trap kick.wav', move_kick)
 
 
 	def mouse_click(self,x,y):
 		global CURRENT_PLAYER
-		square = (floor(x/75),floor((600-y)/75))
-		#print(square)
+		square = (floor(x/75),floor((600-y)/75)) # hard coded based on canvas size
 		col, row = square
 		try:
 			clicked = self.board[col][row]
@@ -80,31 +77,56 @@ class ChessModel:
 			return
 
 
-		if self.selection != None:
+		if self.selection:
 			scol, srow = self.selection
 			selected = self.board[scol][srow]
+
 			if square == self.selection:
 				self.selection = None
-				my_sound.stop(select_atmos)
 			else:
-				if clicked != None and clicked.color == CURRENT_PLAYER:
+				if clicked and clicked.color == CURRENT_PLAYER:
 					self.selection = square
-					my_sound.stop(select_atmos)
-					my_sound.play('sounds/C#_AMBIENT.wav', select_atmos, repeat=True)
+					s_select_cm.stop()
+					s_select.play()
+
 				elif square in selected.valid_placements(scol, srow, self.board):
 					self.destination = (col,row)
-					my_sound.stop(select_atmos)
+					s_select_cm.stop()
+					s_move.play()
 					self.update()
+
 				else:
 					pass
 					# play error sound
-		elif clicked != None and clicked.color == CURRENT_PLAYER:
+
+		elif clicked and clicked.color == CURRENT_PLAYER:
 			self.selection = square
-			my_sound.play('sounds/C#_AMBIENT.wav', select_atmos, repeat=True)
+			s_select.play()
+
+		self.check_for_mate()
+
+
+
+	def check_for_mate(self):
+		if self.selection:
+			scol,srow = self.selection
+			for dcol,drow in self.board[scol][srow].valid_placements(scol,srow, self.board):
+				if type(self.board[dcol][drow]) is King:
+					s_select_cm.play()
+		else:
+			s_select_cm.stop()
+
+
+
+	def check_game_over(self, dcol, drow):
+		if type(self.board[dcol][drow]) is King:
+			self.game_over()
+
 
 
 	def game_over(self):
-		global CURRENT_PLAYER
-		self.winner = CURRENT_PLAYER
+		global WINNER
+		WINNER = CURRENT_PLAYER
+		#s_win.play()
 
 
