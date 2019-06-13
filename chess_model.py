@@ -14,6 +14,8 @@ class ChessModel:
 		self.board = self.create_board()
 		self.selection = None # stores a tuple of the array position of the selected piece
 		self.destination = None # stores a tuple of the array position of the destination
+		self.white_in_check = False
+		self.black_in_check = False
 
 	def create_board(self):
 		"""Returns a 2D array where None is an empty square and occupied squares
