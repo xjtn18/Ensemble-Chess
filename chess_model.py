@@ -2,20 +2,27 @@ from chess_pieces import *
 from math import floor
 from chess_sound import *
 
-# Global
-CURRENT_PLAYER = white
-WINNER = None
-
-
-
 class ChessModel:
 
 	def __init__(self):
+		self.current_player = white
+		self.winner = None
+
 		self.board = self.create_board()
 		self.selection = None # stores a tuple of the array position of the selected piece
-		self.destination = None # stores a tuple of the array position of the destination
+		self.destination = None	# stores a tuple of the array position of the destination
+
+		# Update Booleans -
 		self.white_in_check = False
 		self.black_in_check = False
+
+		# Castling Booleans - Perhaps these booleans update every turn using a helper function?
+		self.white_king_castle = True # Can white castle King Side (O-O)?
+		self.black_king_castle = True # Can white castle Queen Side (O-O-O)?
+
+		self.black_king_castle = True # Can black castle King Side (O-O)?
+		self.black_queen_castle = True # Can black castle Queen Side (O-O-O)?
+
 		#random comment
 
 	def create_board(self):
@@ -62,21 +69,24 @@ class ChessModel:
 		self.selection, self.destination = None, None
 		self.change_current_move()
 
+	def squareUnderAttack(x: int, y: int,) -> bool:
+		'''
+		Returns whether or not, in the current board state, a square is currently
+		under attack (aka the Opponent could take a piece on that square next turn)
+		'''
 
 
 	def change_current_move(self):
 		"""Switches the turn after a play has been made"""
-		global CURRENT_PLAYER
-		if CURRENT_PLAYER == white:
-			CURRENT_PLAYER = black
+		if self.current_player == white:
+			self.current_player = black
 		else:
-			CURRENT_PLAYER = white
+			self.current_player = white
 
 
 	def mouse_click(self,x,y):
 		"""Takes the mouse click coordinates and converts it to a position in the
 		2D array. Changes selected piece and calls update if valid destination is clicked."""
-		global CURRENT_PLAYER
 		square = (floor((x)/75),floor((600-y)/75)) # hard coded based on canvas size
 		col, row = square
 
@@ -95,7 +105,7 @@ class ChessModel:
 			if square == self.selection:	# If clicked square is same as selected, remove selection
 				self.selection = None
 			else:	# clicked square is not the already selected one
-				if clicked and clicked.color == CURRENT_PLAYER:	# clicked square is just another selection
+				if clicked and clicked.color == self.current_player:	# clicked square is just another selection
 					self.selection = square
 					s_select_cm.stop()
 					s_select.play()
@@ -106,11 +116,11 @@ class ChessModel:
 					s_move.play()
 					self.update() # move the piece to the destination
 
-				else: # clicked square 
+				else: # clicked square
 					pass
 					# play error sound
 
-		elif clicked and clicked.color == CURRENT_PLAYER: # if there is no selected piece and clicked is a current players piece
+		elif clicked and clicked.color == self.current_player: # if there is no selected piece and clicked is a current players piece
 			self.selection = square
 			s_select.play()
 
@@ -139,8 +149,5 @@ class ChessModel:
 
 	def game_over(self):
 		"""Sets winner equal to whoever took a King"""
-		global WINNER
-		WINNER = CURRENT_PLAYER
+		self.winner = self.current_player
 		#s_win.play()
-
-

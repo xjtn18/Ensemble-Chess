@@ -3,8 +3,8 @@ from PIL.ImageTk import PhotoImage
 from PIL import Image
 
 
-white = 'ghost white'
-black = 'gray15'
+white = 0
+black = 1
 
 
 """
@@ -188,6 +188,3 @@ def get_piece_color(color):
 		return 'white'
 	else:
 		return 'black'
-
-
-
