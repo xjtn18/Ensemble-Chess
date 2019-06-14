@@ -1,7 +1,7 @@
 from chess_pieces import *
 from math import floor
 from chess_sound import *
-
+hey
 class ChessModel:
 
 	def __init__(self):
@@ -69,11 +69,13 @@ class ChessModel:
 		self.selection, self.destination = None, None
 		self.change_current_move()
 
+
 	def squareUnderAttack(x: int, y: int,) -> bool:
 		'''
 		Returns whether or not, in the current board state, a square is currently
 		under attack (aka the Opponent could take a piece on that square next turn)
 		'''
+		return (x,y) in all_placements
 
 
 	def change_current_move(self):
