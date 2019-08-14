@@ -1,8 +1,10 @@
 from chess_pieces import *
 from math import floor
 from chess_sound import *
-hey
+
 class ChessModel:
+
+	KING_POSITIONS = ((4,0), (4,7))
 
 	def __init__(self):
 		self.current_player = white
@@ -12,18 +14,22 @@ class ChessModel:
 		self.selection = None # stores a tuple of the array position of the selected piece
 		self.destination = None	# stores a tuple of the array position of the destination
 
-		# Update Booleans -
+		# Check Booleans
 		self.white_in_check = False
 		self.black_in_check = False
 
 		# Castling Booleans - Perhaps these booleans update every turn using a helper function?
 		self.white_king_castle = True # Can white castle King Side (O-O)?
-		self.black_king_castle = True # Can white castle Queen Side (O-O-O)?
+		self.white_queen_castle = True # Can white castle Queen Side (O-O-O)?
 
 		self.black_king_castle = True # Can black castle King Side (O-O)?
 		self.black_queen_castle = True # Can black castle Queen Side (O-O-O)?
 
-		#random comment
+
+		self.all_placements = set()  # stores all of the possible spots that any peice on the board can go
+
+
+
 
 	def create_board(self):
 		"""Returns a 2D array where None is an empty square and occupied squares
@@ -31,7 +37,6 @@ class ChessModel:
 		board = [[None]*8 for i in range(8)]
 
 		for i in range(8):
-			pass
 			board[i][1] = Pawn(white)
 			board[i][6] = Pawn(black)
 
@@ -61,34 +66,50 @@ class ChessModel:
 		scol,srow = self.selection
 		dcol,drow = self.destination
 
-		self.check_game_over(dcol, drow)
+		
+		#self.check_game_over(dcol, drow)
 
 		self.board[dcol][drow] = self.board[scol][srow] # moves selected to destination
 		self.board[scol][srow] = None # removes where the piece previously was
 
+		if type(self.destination) is King:  # if a king was moved
+			self.update_king_pos(self.destination, self.current_player)
+
+		#self.update_all()
+		self.check_for_check() # after making a selection, check if the other players king is in position
+
 		self.selection, self.destination = None, None
-		self.change_current_move()
+
+		#SWITCH CURRENT PLAYER
+		self.current_player = self.opp()
+
+		# END OF THE PLAY #
 
 
-	def squareUnderAttack(x: int, y: int,) -> bool:
-		'''
-		Returns whether or not, in the current board state, a square is currently
-		under attack (aka the Opponent could take a piece on that square next turn)
-		'''
+
+	def get_king_pos(self, color: int):
+		return KING_POSITIONS[color]
+
+
+	def update_king_pos(self, dest, color: int):
+		KING_POSITIONS[color] = dest
+
+
+
+	def squareUnderAttack(self, x: int, y: int,) -> bool:
+		"""Returns whether or not, in the current board state, a square is currently
+			under attack (aka the Opponent could take a piece on that square next turn)"""
 		return (x,y) in all_placements
 
 
-	def change_current_move(self):
-		"""Switches the turn after a play has been made"""
-		if self.current_player == white:
-			self.current_player = black
-		else:
-			self.current_player = white
+	def opp(self):
+		"""returns opponents color"""
+		return (self.current_player + 1) % 2
 
 
 	def mouse_click(self,x,y):
 		"""Takes the mouse click coordinates and converts it to a position in the
-		2D array. Changes selected piece and calls update if valid destination is clicked."""
+			2D array. Changes selected piece and calls update if valid destination is clicked."""
 		square = (floor((x)/75),floor((600-y)/75)) # hard coded based on canvas size
 		col, row = square
 
@@ -106,6 +127,7 @@ class ChessModel:
 
 			if square == self.selection:	# If clicked square is same as selected, remove selection
 				self.selection = None
+				return
 			else:	# clicked square is not the already selected one
 				if clicked and clicked.color == self.current_player:	# clicked square is just another selection
 					self.selection = square
@@ -126,26 +148,24 @@ class ChessModel:
 			self.selection = square
 			s_select.play()
 
-		self.check_for_mate() # after making a selection, check if the other players king is in position
 
 
 
-	def check_for_mate(self):
+	def check_for_check(self):
 		"""Checks if the other players king is in valid placements of selected."""
-		if self.selection:
-			scol,srow = self.selection
-			for dcol,drow in self.board[scol][srow].valid_placements(scol,srow, self.board):
-				if type(self.board[dcol][drow]) is King:
-					s_select_cm.play()
-		else:
-			s_select_cm.stop()
+
+		opponent = self.opp()
+		print(type(self.all_placements))
+		if self.get_king_pos(opponent) in self.all_placements:
+			print(f"{opponent} in check")
 
 
 
 	def check_game_over(self, dcol, drow):
-		"""If destination was a king, end game"""
-		if type(self.board[dcol][drow]) is King:
-			self.game_over()
+		"""If a king is in check"""
+		pass
+		#if KING_POSITIONS(current_player)
+			#self.game_over()
 
 
 
@@ -153,3 +173,4 @@ class ChessModel:
 		"""Sets winner equal to whoever took a King"""
 		self.winner = self.current_player
 		#s_win.play()
+

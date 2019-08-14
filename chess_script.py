@@ -20,7 +20,7 @@ class Motion:
 
 if __name__ == '__main__':
 	root = Tk()
-	root.title("Jake n Ha Chess")
+	root.title("JakeChess")
 	root.protocol("WM_DELETE_WINDOW",quit)
 	root.resizable(False, False)
 
