@@ -2,21 +2,28 @@ from chess_pieces import *
 from math import floor
 from chess_sound import *
 
+
+
+
 class ChessModel:
 
-	KING_POSITIONS = ((4,0), (4,7))
+	KING_POSITIONS = [(4,0), (4,7)]
+	WINNER = None
 
 	def __init__(self):
 		self.current_player = white
-		self.winner = None
 
 		self.board = self.create_board()
 		self.selection = None # stores a tuple of the array position of the selected piece
+		self.selection_placements = ((-1,-1),)
 		self.destination = None	# stores a tuple of the array position of the destination
 
+
+		self.en_passant_active = False
 		# Check Booleans
 		self.white_in_check = False
 		self.black_in_check = False
+
 
 		# Castling Booleans - Perhaps these booleans update every turn using a helper function?
 		self.white_king_castle = True # Can white castle King Side (O-O)?
@@ -24,9 +31,6 @@ class ChessModel:
 
 		self.black_king_castle = True # Can black castle King Side (O-O)?
 		self.black_queen_castle = True # Can black castle Queen Side (O-O-O)?
-
-
-		self.all_placements = set()  # stores all of the possible spots that any peice on the board can go
 
 
 
@@ -66,40 +70,77 @@ class ChessModel:
 		scol,srow = self.selection
 		dcol,drow = self.destination
 
-		
-		#self.check_game_over(dcol, drow)
+		captured = self.board[dcol][drow]
+		if captured != None:
+			play_capture_sound()
 
 		self.board[dcol][drow] = self.board[scol][srow] # moves selected to destination
 		self.board[scol][srow] = None # removes where the piece previously was
 
-		if type(self.destination) is King:  # if a king was moved
+
+		# POST MOVE ANALYSIS #
+		moved_piece = self.board[dcol][drow]
+		if type(moved_piece) is King:
 			self.update_king_pos(self.destination, self.current_player)
 
-		#self.update_all()
-		self.check_for_check() # after making a selection, check if the other players king is in position
+		if self.en_passant_active:
+			self.en_passant_active = False
+			self.clear_en_passant()
+
+		if type(moved_piece) is Pawn:
+			if abs(drow - srow) == 2:
+				self.en_passant_active = True
+				if dcol < 7 and type(self.board[dcol+1][drow]) is Pawn and self.board[dcol+1][drow].color != self.current_player:
+					self.board[dcol+1][drow].en_passant = 1
+				if dcol > 0 and type(self.board[dcol-1][drow]) is Pawn and self.board[dcol-1][drow].color != self.current_player:
+					self.board[dcol-1][drow].en_passant = -1
+			elif scol != dcol and captured == None:  # an en passant move was made
+				self.board[dcol][drow - (drow - srow)] = None
+
+
+		opponent = self.opp()
+		if in_check(self.board, opponent, ChessModel.KING_POSITIONS[opponent]):
+			exec(f'self.{get_piece_color(opponent)}_in_check = True')
+			if self.check_for_mate(opponent) == True:
+				self.game_over()
 
 		self.selection, self.destination = None, None
 
-		#SWITCH CURRENT PLAYER
-		self.current_player = self.opp()
+		self.current_player = self.opp()  # switch current player
 
 		# END OF THE PLAY #
 
 
+	def clear_en_passant(self):
+		"""as soon as we find a piece that has a valid move, we know its not check mate"""
+		for col in range(8):
+			for row in range(8):
+				spot = self.board[col][row]
+				if type(spot) is Pawn and spot.en_passant != 0:
+					spot.en_passant = 0
+
+
+
+	def check_for_mate(self, color):
+		"""as soon as we find a piece that has a valid move, we know its not check mate"""
+		for col in range(8):
+			for row in range(8):
+				spot = self.board[col][row]
+				if spot and spot.color == color:
+					if spot.valid_placements(col, row, self.board) != []:
+						return False
+		return True
+
+
+
 
 	def get_king_pos(self, color: int):
-		return KING_POSITIONS[color]
+		return ChessModel.KING_POSITIONS[color]
 
 
 	def update_king_pos(self, dest, color: int):
-		KING_POSITIONS[color] = dest
+		ChessModel.KING_POSITIONS[color] = dest
 
-
-
-	def squareUnderAttack(self, x: int, y: int,) -> bool:
-		"""Returns whether or not, in the current board state, a square is currently
-			under attack (aka the Opponent could take a piece on that square next turn)"""
-		return (x,y) in all_placements
 
 
 	def opp(self):
@@ -121,56 +162,52 @@ class ChessModel:
 			return
 
 
-		if self.selection:	# if a piece has been selected
+		if self.selection:	# if a piece has already been selected at the time of the click
 			scol, srow = self.selection
-			selected = self.board[scol][srow]
 
 			if square == self.selection:	# If clicked square is same as selected, remove selection
 				self.selection = None
+				self.reset_hints()
+				#play_select_sound() # play a subtke non tonal sound here
+
 				return
 			else:	# clicked square is not the already selected one
 				if clicked and clicked.color == self.current_player:	# clicked square is just another selection
 					self.selection = square
-					s_select_cm.stop()
-					s_select.play()
+					scol, srow = self.selection
+					self.selection_placements = self.board[scol][srow].valid_placements(scol, srow, self.board)
+					play_select_sound()
 
-				elif square in selected.valid_placements(scol, srow, self.board): # clicked square is a valid placement
+
+				######## MOVE MADE ##########
+				elif square in self.selection_placements: # clicked square is a valid placement
 					self.destination = (col,row)
-					s_select_cm.stop()
-					s_move.play()
+					self.reset_hints()
+					play_move_sound(self.board[scol][srow])
 					self.update() # move the piece to the destination
+					##########
+
 
 				else: # clicked square
-					pass
+					self.selection = None
+					self.reset_hints()
 					# play error sound
 
 		elif clicked and clicked.color == self.current_player: # if there is no selected piece and clicked is a current players piece
 			self.selection = square
-			s_select.play()
+			scol, srow = self.selection
+			self.selection_placements = self.board[scol][srow].valid_placements(scol, srow, self.board)
+			play_select_sound()
 
 
-
-
-	def check_for_check(self):
-		"""Checks if the other players king is in valid placements of selected."""
-
-		opponent = self.opp()
-		print(type(self.all_placements))
-		if self.get_king_pos(opponent) in self.all_placements:
-			print(f"{opponent} in check")
-
-
-
-	def check_game_over(self, dcol, drow):
-		"""If a king is in check"""
-		pass
-		#if KING_POSITIONS(current_player)
-			#self.game_over()
+	def reset_hints(self):
+		self.selection_placements = ((-1,-1),)
 
 
 
 	def game_over(self):
-		"""Sets winner equal to whoever took a King"""
-		self.winner = self.current_player
-		#s_win.play()
+		"""Sets winner equal to whoever took a checkmated"""
+		ChessModel.WINNER = self.current_player
+		s_win.play()
+
 

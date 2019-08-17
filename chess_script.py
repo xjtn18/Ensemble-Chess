@@ -19,7 +19,21 @@ class Motion:
 
 
 if __name__ == '__main__':
+
 	root = Tk()
+
+
+	"""
+	root.withdraw()
+	root.update_idletasks()  # Update "requested size" from geometry manager
+
+	x = (root.winfo_screenwidth() - root.winfo_reqwidth()) / 1.8
+	y = (root.winfo_screenheight() - root.winfo_reqheight()) / 5.6
+	root.geometry("+%d+%d" % (x, y))
+
+	root.deiconify()
+	"""
+
 	root.title("JakeChess")
 	root.protocol("WM_DELETE_WINDOW",quit)
 	root.resizable(False, False)
@@ -44,6 +58,7 @@ if __name__ == '__main__':
 
 	repeater(root)
 	root.mainloop()
+
 
 
 

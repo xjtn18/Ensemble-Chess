@@ -7,6 +7,9 @@ from PIL import Image
 white = 0
 black = 1
 
+right = 1
+left = -1
+
 
 """
 All pieces:
@@ -15,30 +18,43 @@ All pieces:
 """
 
 
-def temp_all(board, color) -> list:
+def in_check(board, color, king_pos) -> bool:
 	""""returns a list of all placements"""
-	res = set()
 	for col in range(8):
 		for row in range(8):
 			spot = board[col][row]
-			if spot and spot.color == (color + 1) % 2:
+			if spot and spot.color != color: # only check pieces of opponent
 				for tup in spot.valid_placements(col, row, board, False):
-					res.add(tup)
-	return res
+					if tup == king_pos:
+						return True
+	return False
 
 
 def filter_suicide(placements, col, row, board, color):
+	potential_board = deepcopy(board)
+	removals = []
 	for tup in placements:
 		ncol,nrow = tup  # unpack the placement
 
 		# move the piece on the potential board copy
-		potential_board = deepcopy(board)
+
+		precessor = potential_board[ncol][nrow]
 		potential_board[ncol][nrow] = potential_board[col][row]
 		potential_board[col][row] = None
 
+		if type(board[col][row]) is King:
+			king_pos = (ncol,nrow)
+		else:
+			king_pos = chess_model.ChessModel.KING_POSITIONS[color]
 
-		if chess_model.ChessModel.KING_POSITIONS[color] in temp_all(potential_board, color):
-			placements.remove(tup)
+		if in_check(potential_board, color, king_pos):
+			removals.append(tup)
+
+		potential_board[col][row] = potential_board[ncol][nrow]
+		potential_board[ncol][nrow] = precessor
+
+	for r in removals:
+		placements.remove(r)
 
 	return placements
 
@@ -50,9 +66,9 @@ class Pawn:
 
 	def __init__(self, color):
 		self.color = color
-		image = Image.open(f'piece_images/pawn_{get_piece_color(color)}.png')
-		image = image.resize((75, 75), Image.ANTIALIAS)
-		self._image = PhotoImage(image)
+		self.en_passant = 0
+		self.moved = False
+
 
 	def valid_placements(self, col, row, board, look_ahead = True):
 		placements = []
@@ -63,6 +79,7 @@ class Pawn:
 		times = 1
 		if row == 1 or row == 6:
 			times = 2
+
 
 		nrow = row + forward
 		if 0 <= col + 1 <= 7 and board[col + 1][nrow] != None and board[col + 1][nrow].color != self.color:
@@ -76,16 +93,19 @@ class Pawn:
 					nrow = nrow + forward
 				else: break
 
+
+		if self.en_passant != 0:
+			if self.color == black:
+				placements.append((col - self.en_passant, row - 1))
+			else:
+				placements.append((col - self.en_passant, row + 1))
+
 		if look_ahead:
 			placements = filter_suicide(placements, col, row, board, self.color)
+
+		
 		return placements
 
-
-	def display(self,x,y, the_canvas):
-		the_canvas.create_image(x,y, image=self._image)
-	
-	def __deepcopy__(self, memo):
-		return Pawn(deepcopy(self.color, memo))
 
 
 
@@ -186,7 +206,7 @@ class Queen(Rook, Bishop):
 
 
 	def valid_placements(self, col, row, board, look_ahead = True):
-		placements = Rook.valid_placements(self, col, row, board) + Bishop.valid_placements(self, col, row, board)
+		placements = Rook.valid_placements(self, col, row, board, False) + Bishop.valid_placements(self, col, row, board, False)
 		
 		if look_ahead:
 			placements = filter_suicide(placements, col, row, board, self.color)
@@ -203,11 +223,16 @@ class King(Queen):
 
 
 	def valid_placements(self, col, row, board, look_ahead = True):
-		placements = Queen.valid_placements(self, col, row, board)
-		placements = filter(lambda spot: -1 <= spot[0] - col <= 1 and -1 <= spot[1] - row <= 1, placements)
+		placements = Queen.valid_placements(self, col, row, board, False)
+		placements = list(filter(lambda spot: -1 <= spot[0] - col <= 1 and -1 <= spot[1] - row <= 1, placements))
+
 		
+
+
 		if look_ahead:
 			placements = filter_suicide(placements, col, row, board, self.color)
+
+
 		return placements
 
 
