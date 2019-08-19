@@ -1,7 +1,5 @@
 import chess_model
 from copy import deepcopy
-from PIL.ImageTk import PhotoImage
-from PIL import Image
 
 
 white = 0
@@ -58,16 +56,21 @@ def filter_suicide(placements, col, row, board, color):
 
 	return placements
 
+def on_canvas_pos(current):
+	sh = chess_model.ChessModel.sh
+	w = chess_model.ChessModel.w
+	return (current[0]*sh + sh/2 - 2, w - (current[1]*sh + sh/2))
 
 
 
 
 class Pawn:
 
-	def __init__(self, color):
+	def __init__(self, color, current):
 		self.color = color
 		self.en_passant = 0
 		self.moved = False
+		self.location = on_canvas_pos(current)
 
 
 	def valid_placements(self, col, row, board, look_ahead = True):
@@ -112,9 +115,9 @@ class Pawn:
 
 class Rook:
 
-	def __init__(self, color):
+	def __init__(self, color, current):
 		self.color = color
-
+		self.location = on_canvas_pos(current)
 
 	def valid_placements(self, col, row, board, look_ahead = True):
 		placements = []
@@ -143,8 +146,9 @@ class Rook:
 
 class Bishop:
 
-	def __init__(self, color):
+	def __init__(self, color, current):
 		self.color = color
+		self.location = on_canvas_pos(current)
 
 
 	def valid_placements(self, col, row, board, look_ahead = True):
@@ -176,9 +180,9 @@ class Bishop:
 
 class Knight:
 
-	def __init__(self, color):
+	def __init__(self, color, current):
 		self.color = color
-
+		self.location = on_canvas_pos(current)
 
 	def valid_placements(self, col, row, board, look_ahead = True):
 		placements = []
@@ -201,9 +205,9 @@ class Knight:
 
 class Queen(Rook, Bishop):
 
-	def __init__(self, color):
+	def __init__(self, color, current):
 		self.color = color
-
+		self.location = on_canvas_pos(current)
 
 	def valid_placements(self, col, row, board, look_ahead = True):
 		placements = Rook.valid_placements(self, col, row, board, False) + Bishop.valid_placements(self, col, row, board, False)
@@ -218,22 +222,20 @@ class Queen(Rook, Bishop):
 
 class King(Queen):
 
-	def __init__(self, color):
+	def __init__(self, color, current):
 		self.color = color
-
+		self.location = on_canvas_pos(current)
 
 	def valid_placements(self, col, row, board, look_ahead = True):
 		placements = Queen.valid_placements(self, col, row, board, False)
 		placements = list(filter(lambda spot: -1 <= spot[0] - col <= 1 and -1 <= spot[1] - row <= 1, placements))
 
-		
-
-
 		if look_ahead:
 			placements = filter_suicide(placements, col, row, board, self.color)
 
-
 		return placements
+
+
 
 
 def get_piece_color(color):

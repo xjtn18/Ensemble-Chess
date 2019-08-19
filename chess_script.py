@@ -23,7 +23,7 @@ if __name__ == '__main__':
 	root = Tk()
 
 
-	"""
+	
 	root.withdraw()
 	root.update_idletasks()  # Update "requested size" from geometry manager
 
@@ -32,7 +32,7 @@ if __name__ == '__main__':
 	root.geometry("+%d+%d" % (x, y))
 
 	root.deiconify()
-	"""
+	
 
 	root.title("JakeChess")
 	root.protocol("WM_DELETE_WINDOW",quit)
@@ -48,13 +48,14 @@ if __name__ == '__main__':
 	the_canvas.bind('<Motion>', my_motion.motion)
 
 
-	game = ChessGame(my_motion)
+	game = ChessGame(my_motion, root)
 
 
 	# Main loop
 	def repeater(root):
 		game.display(the_canvas)
-		root.after(20,repeater,root)
+		root.after(1,repeater,root)
+
 
 	repeater(root)
 	root.mainloop()

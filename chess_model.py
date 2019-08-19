@@ -1,16 +1,22 @@
 from chess_pieces import *
 from math import floor
 from chess_sound import *
+from fractions import gcd
+import sys
+import time
+import math
 
-
-
+TRANSITION_RATE = 35
 
 class ChessModel:
 
 	KING_POSITIONS = [(4,0), (4,7)]
 	WINNER = None
+	w = 606
+	sh = 75.75
 
-	def __init__(self):
+	def __init__(self, root):
+		self.root = root
 		self.current_player = white
 
 		self.board = self.create_board()
@@ -41,28 +47,29 @@ class ChessModel:
 		board = [[None]*8 for i in range(8)]
 
 		for i in range(8):
-			board[i][1] = Pawn(white)
-			board[i][6] = Pawn(black)
+			board[i][1] = Pawn(white, (i,1))
+			board[i][6] = Pawn(black, (i,6))
 
-		board[0][0] = Rook(white)
-		board[1][0] = Knight(white)
-		board[2][0] = Bishop(white)
-		board[3][0] = Queen(white)
-		board[4][0] = King(white)
-		board[5][0] = Bishop(white)
-		board[6][0] = Knight(white)
-		board[7][0] = Rook(white)
+		board[0][0] = Rook(white, (0,0))
+		board[1][0] = Knight(white, (1,0))
+		board[2][0] = Bishop(white, (2,0))
+		board[3][0] = Queen(white, (3,0))
+		board[4][0] = King(white, (4,0))
+		board[5][0] = Bishop(white, (5,0))
+		board[6][0] = Knight(white, (6,0))
+		board[7][0] = Rook(white, (7,0))
 
-		board[0][7] = Rook(black)
-		board[1][7] = Knight(black)
-		board[2][7] = Bishop(black)
-		board[3][7] = Queen(black)
-		board[4][7] = King(black)
-		board[5][7] = Bishop(black)
-		board[6][7] = Knight(black)
-		board[7][7] = Rook(black)
+		board[0][7] = Rook(black, (0,7))
+		board[1][7] = Knight(black, (1,7))
+		board[2][7] = Bishop(black, (2,7))
+		board[3][7] = Queen(black, (3,7))
+		board[4][7] = King(black, (4,7))
+		board[5][7] = Bishop(black, (5,7))
+		board[6][7] = Knight(black, (6,7))
+		board[7][7] = Rook(black, (7,7))
 
 		return board
+
 
 
 	def update(self):
@@ -73,6 +80,13 @@ class ChessModel:
 		captured = self.board[dcol][drow]
 		if captured != None:
 			play_capture_sound()
+
+		#self.board[scol][srow].transition = ((scol,srow), (dcol,drow))
+
+
+		# Transition piece
+		
+		self.transition(self.board[scol][srow], self.selection, self.destination)
 
 		self.board[dcol][drow] = self.board[scol][srow] # moves selected to destination
 		self.board[scol][srow] = None # removes where the piece previously was
@@ -109,6 +123,68 @@ class ChessModel:
 		self.current_player = self.opp()  # switch current player
 
 		# END OF THE PLAY #
+
+
+	def floor_tuple(self, tup):
+		tup = ( floor(tup[0]), floor(tup[1]) )
+		return tup
+
+	def get_max_axis(self, point):
+		x,y = point
+		my_max = max(x,y)
+		return my_max
+
+	def distance(self, p1, p2):
+		x1,y1 = p1
+		x2,y2 = p2
+		return math.sqrt((y2 - y1)**2 + (x2 - x1)**2)
+
+
+	def calc_direction(self, start, end):
+		s1,s2 = start
+		e1,e2 = end
+		a = e1-s1
+		b = e2-s2
+		a = 1 if a == 0 else a/abs(a)
+		b = 1 if b == 0 else b/abs(b)
+		return (a,b)
+
+
+	def transition(self, piece, start, end):
+		sh = ChessModel.sh
+		w = ChessModel.w
+		dcol, drow = end
+		slope = self.get_slope(start, end)
+		final = (dcol*sh + sh/2 - 2, w - (drow*sh + sh/2))
+		sma = self.get_max_axis(slope)
+		direction = self.calc_direction(piece.location, final)
+		self.loop(piece, sma, final, slope, direction, TRANSITION_RATE)
+
+	def loop(self, piece, sma, final, slope, direction, rate):
+		for i in range(rate):
+			distance = floor(self.distance(piece.location, final))
+			if distance <= sma:
+				piece.location = final
+				return
+			self.move(piece, slope, direction)
+			#rate = floor(rate/(rate/5)/distance + 10)
+		self.root.after(1, self.loop, piece, sma, final, slope, direction, rate)
+
+
+	def get_slope(self, p1, p2):
+		fract = (p1[1] - p2[1], p1[0] - p2[0])
+		my_gcd = gcd(fract[0], fract[1])
+		res = (fract[0]/my_gcd, fract[1]/my_gcd)
+		return res
+
+
+	def move(self, piece, slope, direction):
+		p1,p2 = piece.location
+		s1,s2 = slope
+		s1 = abs(s1)
+		d1,d2 = direction
+		piece.location = (p1 + s2*d1, p2 + s1*d2)
+
 
 
 	def clear_en_passant(self):
@@ -169,8 +245,8 @@ class ChessModel:
 				self.selection = None
 				self.reset_hints()
 				#play_select_sound() # play a subtke non tonal sound here
-
 				return
+
 			else:	# clicked square is not the already selected one
 				if clicked and clicked.color == self.current_player:	# clicked square is just another selection
 					self.selection = square

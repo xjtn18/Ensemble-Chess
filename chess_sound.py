@@ -53,10 +53,9 @@ s_attack = MySound(pg.mixer.Sound('sounds/attack.wav'), 7, 1, 0)
 
 
 
-s_rain.play()
+#s_rain.play()
 s_amb.play()
 s_beat.play()
-#s_music.play()
 
 
 def play_select_sound():

@@ -9,9 +9,11 @@ def get_piece_color(color):
 	return 'white' if color is white else 'black'
 
 
+
 class ChessGame:
-	def __init__(self, my_motion):
-		self.gamestate = ChessModel()
+	def __init__(self, my_motion, root):
+		self.root = root
+		self.gamestate = ChessModel(root)
 		self.mouse_pos = my_motion	# Stores the position of the mouse relative to the canvas
 
 
@@ -64,7 +66,9 @@ class ChessGame:
 		image = image.resize((75, 75), Image.ANTIALIAS)
 		self.black_king = PhotoImage(image)
 
-	
+
+	def update():
+		self.root.after(20, chess_script.repeater, self.root)
 
 
 
@@ -75,6 +79,9 @@ class ChessGame:
 
 		w = the_canvas.winfo_height()
 		sh = w/8
+
+		ChessModel.w = w
+		ChessModel.sh = sh
 
 
 		# This block displays the board and pieces (the game is still playing)
@@ -118,7 +125,7 @@ class ChessGame:
 					else:
 						the_canvas.create_oval(dcol*sh + sh/2.5,w-(drow*sh + sh/2.5),dcol*sh+sh - sh/2.5,w-(drow*sh+sh - sh/2.5),fill='DarkOliveGreen3',outline='DarkOliveGreen3')
 				else:
-					the_canvas.create_rectangle(dcol*sh,w-(drow*sh),dcol*sh+sh,w-(drow*sh+sh),fill='brown3',outline='brown3')
+					the_canvas.create_rectangle(dcol*sh,w-(drow*sh),dcol*sh+sh,w-(drow*sh+sh),fill='brown2',outline='brown2')
 
 
 
@@ -144,10 +151,13 @@ class ChessGame:
 					else: # King
 						img = self.white_king if piece.color is white else self.black_king
 
+					#if piece.location != (x,y):
+					#	x, y = piece.location
+					x, y = piece.location
 					the_canvas.create_image(x, y, image=img)
 
 
-					
+
 
 	def swap_color(self, square_color):
 		"""For checkerboard pattern"""
