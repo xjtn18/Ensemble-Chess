@@ -17,7 +17,6 @@ All pieces:
 
 
 def in_check(board, color, king_pos) -> bool:
-	""""returns a list of all placements"""
 	for col in range(8):
 		for row in range(8):
 			spot = board[col][row]
@@ -118,6 +117,7 @@ class Rook:
 	def __init__(self, color, current):
 		self.color = color
 		self.location = on_canvas_pos(current)
+		self.moved = False
 
 	def valid_placements(self, col, row, board, look_ahead = True):
 		placements = []
@@ -149,6 +149,7 @@ class Bishop:
 	def __init__(self, color, current):
 		self.color = color
 		self.location = on_canvas_pos(current)
+		self.moved = False
 
 
 	def valid_placements(self, col, row, board, look_ahead = True):
@@ -183,6 +184,7 @@ class Knight:
 	def __init__(self, color, current):
 		self.color = color
 		self.location = on_canvas_pos(current)
+		self.moved = False
 
 	def valid_placements(self, col, row, board, look_ahead = True):
 		placements = []
@@ -208,6 +210,7 @@ class Queen(Rook, Bishop):
 	def __init__(self, color, current):
 		self.color = color
 		self.location = on_canvas_pos(current)
+		self.moved = False
 
 	def valid_placements(self, col, row, board, look_ahead = True):
 		placements = Rook.valid_placements(self, col, row, board, False) + Bishop.valid_placements(self, col, row, board, False)
@@ -225,15 +228,40 @@ class King(Queen):
 	def __init__(self, color, current):
 		self.color = color
 		self.location = on_canvas_pos(current)
+		self.moved = False
 
 	def valid_placements(self, col, row, board, look_ahead = True):
 		placements = Queen.valid_placements(self, col, row, board, False)
 		placements = list(filter(lambda spot: -1 <= spot[0] - col <= 1 and -1 <= spot[1] - row <= 1, placements))
-
+		
 		if look_ahead:
+			placements.extend(self.add_castle(col, row, board))
 			placements = filter_suicide(placements, col, row, board, self.color)
 
 		return placements
+
+
+	def add_castle(self, col, row, board):
+		res = set()
+		if not self.moved and not in_check(board, self.color, (col,row)):
+			rook1 =  board[col+3][row]
+			middle = {(col+1, row), (col+2, row)}
+			if not rook1.moved and self.middle_empty(middle, board) and not middle.issubset(chess_model.ChessModel.all_victims(board, self.color)):
+				res.add((col+2, row))
+
+			rook2 = board[col-4][row]
+			middle = {(col-1, row), (col-2, row)}
+			if not rook1.moved and self.middle_empty(middle, board) and not middle.issubset(chess_model.ChessModel.all_victims(board, self.color)):
+				res.add((col-2, row))
+
+		return res
+
+	def middle_empty(self, middle, board):
+		for spot in middle:
+			col,row = spot
+			if board[col][row] != None:
+				return False
+		return True
 
 
 

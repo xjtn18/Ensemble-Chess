@@ -102,7 +102,7 @@ class ChessGame:
 
 
 	def draw_board(self, the_canvas, w, sh):
-		square_color = 'steelblue2'
+		square_color = 'SteelBlue2'
 		for col in range(8):
 			square_color = self.swap_color(square_color)
 			for row in range(8):
@@ -161,10 +161,10 @@ class ChessGame:
 
 	def swap_color(self, square_color):
 		"""For checkerboard pattern"""
-		if square_color == 'steelblue2':
+		if square_color == 'SteelBlue2':
 			square_color = 'lavender'
 		else:
-			square_color = 'steelblue2'
+			square_color = 'SteelBlue2'
 		return square_color
 
 
@@ -173,12 +173,12 @@ class ChessGame:
 		"""Draws the end game screen (shows who won)"""
 		if winner is white:
 			winner_text = 'white'
-			the_canvas.configure(background='gray10')
+			the_canvas.configure(background='SteelBlue2')
 			text_color = 'ghost white'
 		else:
 			winner_text = 'black'
 			the_canvas.configure(background='ghost white')
-			text_color = 'gray10'
+			text_color = 'SteelBlue2'
 		text = f"{winner_text}  wins"
 		the_canvas.create_text(w/2 - len(text)/2, w/2-15,fill=text_color,font=('Herculanum', 50),
                     	text=text)

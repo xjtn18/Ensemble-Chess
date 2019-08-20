@@ -45,6 +45,10 @@ test.show()
 
 test_list = ["blue", "red"]
 
+test_list.extend({1,2,3})
+
+for i in test_list:
+	i = 8
 
 for i in test_list:
 	print(i, end=" ")
