@@ -229,6 +229,7 @@ class King(Queen):
 		self.color = color
 		self.location = on_canvas_pos(current)
 		self.moved = False
+		self.castled = False
 
 	def valid_placements(self, col, row, board, look_ahead = True):
 		placements = Queen.valid_placements(self, col, row, board, False)

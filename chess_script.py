@@ -18,12 +18,7 @@ class Motion:
 		return self.x,self.y
 
 
-if __name__ == '__main__':
-
-	root = Tk()
-
-
-	
+def center(root):
 	root.withdraw()
 	root.update_idletasks()  # Update "requested size" from geometry manager
 
@@ -32,14 +27,21 @@ if __name__ == '__main__':
 	root.geometry("+%d+%d" % (x, y))
 
 	root.deiconify()
-	
 
-	root.title("JakeChess")
+
+
+if __name__ == '__main__':
+	root = Tk()
+
+	#center(root)
+	
+	root.title("Sky Chess")
 	root.protocol("WM_DELETE_WINDOW",quit)
-	root.resizable(False, False)
 
 	the_canvas = Canvas(root,width=600,height=600,bg="gray10")
 	the_canvas.pack()
+
+	root.resizable(False, False)
 
 
 	#Bindings

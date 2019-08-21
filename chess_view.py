@@ -1,7 +1,11 @@
 from chess_model import *
-import chess_script
 from PIL.ImageTk import PhotoImage
 from PIL import Image
+import math
+
+
+TRANSITION_RATE = 35
+
 
 
 def get_piece_color(color):
@@ -9,12 +13,13 @@ def get_piece_color(color):
 	return 'white' if color is white else 'black'
 
 
-
 class ChessGame:
+
 	def __init__(self, my_motion, root):
 		self.root = root
 		self.gamestate = ChessModel(root)
 		self.mouse_pos = my_motion	# Stores the position of the mouse relative to the canvas
+		self.boardColors = self.a()
 
 
 		image = Image.open('piece_images/bishop_white.png')
@@ -67,8 +72,16 @@ class ChessGame:
 		self.black_king = PhotoImage(image)
 
 
-	def update():
-		self.root.after(20, chess_script.repeater, self.root)
+	def a(self):
+		return ('lavender', 'SteelBlue3')
+
+
+	def b(self):
+		return ('gray13', 'gray11')
+
+
+	def c(self):
+		return ('tan4', 'burlywood3')
 
 
 
@@ -90,6 +103,7 @@ class ChessGame:
 			self.draw_hints(the_canvas, w, sh)
 			self.draw_pieces(the_canvas, w, sh)
 
+
 		#This block, when first executed, deletes the gamestate; then it repeatedly
 			# displays the game over screen
 		else:
@@ -102,7 +116,7 @@ class ChessGame:
 
 
 	def draw_board(self, the_canvas, w, sh):
-		square_color = 'SteelBlue2'
+		square_color = self.boardColors[1]
 		for col in range(8):
 			square_color = self.swap_color(square_color)
 			for row in range(8):
@@ -157,14 +171,82 @@ class ChessGame:
 					the_canvas.create_image(x, y, image=img)
 
 
+	@staticmethod
+	def floor_tuple(tup):
+		tup = ( floor(tup[0]), floor(tup[1]) )
+		return tup
+
+	@staticmethod
+	def get_max_axis(point):
+		x,y = point
+		my_max = max(x,y)
+		return my_max
+
+	@staticmethod
+	def distance(p1, p2):
+		x1,y1 = p1
+		x2,y2 = p2
+		return math.sqrt((y2 - y1)**2 + (x2 - x1)**2)
+
+	@staticmethod
+	def calc_direction(start, end):
+		s1,s2 = start
+		e1,e2 = end
+		a = e1-s1
+		b = e2-s2
+		a = 1 if a == 0 else a/abs(a)
+		b = 1 if b == 0 else b/abs(b)
+		return (a,b)
+
+	@staticmethod
+	def transition(piece, start, end, root):
+		sh = ChessModel.sh
+		w = ChessModel.w
+		dcol, drow = end
+		slope = ChessGame.get_slope(start, end)
+		final = (dcol*sh + sh/2 - 2, w - (drow*sh + sh/2))
+		sma = ChessGame.get_max_axis(slope)
+		direction = ChessGame.calc_direction(piece.location, final)
+		ChessGame.loop(piece, sma, final, slope, direction, TRANSITION_RATE, root)
+
+	@staticmethod
+	def loop(piece, sma, final, slope, direction, rate, root):
+		for i in range(rate):
+			distance = floor(ChessGame.distance(piece.location, final))
+			if distance <= sma:
+				play_place()
+				piece.location = final
+				return
+
+			ChessGame.update(piece, slope, direction)
+			#rate = floor(rate/(rate/5)/distance + 10)
+		root.after(1, ChessGame.loop, piece, sma, final, slope, direction, rate, root)
+
+	@staticmethod
+	def get_slope(p1, p2):
+		fract = (p1[1] - p2[1], p1[0] - p2[0])
+		my_gcd = gcd(fract[0], fract[1])
+		res = (fract[0]/my_gcd, fract[1]/my_gcd)
+		return res
+
+	@staticmethod
+	def update(piece, slope, direction):
+		p1,p2 = piece.location
+		s1,s2 = slope
+		s1 = abs(s1)
+		d1,d2 = direction
+		piece.location = (p1 + s2*d1, p2 + s1*d2)
+
+
+
 
 
 	def swap_color(self, square_color):
 		"""For checkerboard pattern"""
-		if square_color == 'SteelBlue2':
-			square_color = 'lavender'
+		if square_color == self.boardColors[1]:
+			square_color = self.boardColors[0]
 		else:
-			square_color = 'SteelBlue2'
+			square_color = self.boardColors[1]
 		return square_color
 
 
@@ -173,12 +255,12 @@ class ChessGame:
 		"""Draws the end game screen (shows who won)"""
 		if winner is white:
 			winner_text = 'white'
-			the_canvas.configure(background='SteelBlue2')
+			the_canvas.configure(background=self.boardColors[1])
 			text_color = 'ghost white'
 		else:
 			winner_text = 'black'
 			the_canvas.configure(background='ghost white')
-			text_color = 'SteelBlue2'
+			text_color = self.boardColors[1]
 		text = f"{winner_text}  wins"
 		the_canvas.create_text(w/2 - len(text)/2, w/2-15,fill=text_color,font=('Herculanum', 50),
                     	text=text)
