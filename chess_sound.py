@@ -36,7 +36,7 @@ pg.mixer.init(freq, bitsize, channels, buffer)
 #All Sounds
 
 s_rain = MySound(pg.mixer.Sound('sounds/rain.wav'), 1, 0.05, -1)
-s_amb = MySound(pg.mixer.Sound('sounds/amb.wav'), 2, 0.8, -1)
+s_amb = MySound(pg.mixer.Sound('sounds/amb.wav'), 2, 0.5, -1)
 
 s_beat = MySound(pg.mixer.Sound('sounds/beat.wav'), 3, 1, -1)
 s_heart = MySound(pg.mixer.Sound('sounds/heart.wav'), 4, 0.2, 0)
@@ -59,7 +59,7 @@ s_attack = MySound(pg.mixer.Sound('sounds/attack.wav'), 7, 1, 0)
 s_place = MySound(pg.mixer.Sound('sounds/place.wav'), 7, 1, 0)
 s_cancel = MySound(pg.mixer.Sound('sounds/cancel.wav'), 7, 0.4, 0)
 
-s_rain.play()
+#s_rain.play()
 s_amb.play()
 s_beat.play()
 

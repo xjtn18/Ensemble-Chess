@@ -1,2 +1,2 @@
-# Jake-Ha-Chess
+# Ensemble Chess
 chess game with custom art and sound effects

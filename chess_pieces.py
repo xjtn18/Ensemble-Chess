@@ -249,16 +249,22 @@ class King(Queen):
 		res = set()
 		if not self.moved and not in_check(board, self.color, (col,row)):
 			rook1 =  board[col+3][row]
-			middle = {(col+1, row), (col+2, row)}
-			if not rook1.moved and self.middle_empty(middle, board) and not middle.issubset(chess_model.ChessModel.all_victims(board, self.color)):
+			middle = {(col+1, row)}
+			if rook1 and not rook1.moved and self.middle_empty(middle, board) and not self.watched(middle, board):
 				res.add((col+2, row))
 
 			rook2 = board[col-4][row]
 			middle = {(col-1, row), (col-2, row)}
-			if not rook1.moved and self.middle_empty(middle, board) and not middle.issubset(chess_model.ChessModel.all_victims(board, self.color)):
+			if rook2 and not rook2.moved and self.middle_empty(middle, board) and not self.watched(middle, board):
 				res.add((col-2, row))
-
 		return res
+
+	def watched(self, spots, board):
+		all = chess_model.ChessModel.all_victims(board, self.color)
+		for spot in spots:
+			if spot in all:
+				return True
+		return False
 
 	def middle_empty(self, middle, board):
 		for spot in middle:

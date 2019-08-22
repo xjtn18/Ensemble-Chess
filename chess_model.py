@@ -16,7 +16,7 @@ class ChessModel:
 	KING_POSITIONS = [(4,0), (4,7)]
 	WINNER = None
 	w = 606
-	sh = 75.75
+	sh = w/8
 
 	def __init__(self, root):
 		self.root = root
@@ -209,7 +209,6 @@ class ChessModel:
 			travel = scol - dcol
 			if abs(travel) > 1:
 				self.moveType = CASTLE
-				print(self.moveType)
 				if travel < 0: # rightside rook
 					rcol, nrcol = 7, 5
 				else:				 # leftside rook

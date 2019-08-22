@@ -1,4 +1,4 @@
-from tkinter import Tk,Canvas
+from tkinter import Tk,Canvas, Toplevel
 from chess_view import *
 from chess_sound import *
 
@@ -20,12 +20,13 @@ class Motion:
 
 def center(root):
 	root.withdraw()
-	root.update_idletasks()  # Update "requested size" from geometry manager
-
-	x = (root.winfo_screenwidth() - root.winfo_reqwidth()) / 1.8
-	y = (root.winfo_screenheight() - root.winfo_reqheight()) / 5.6
-	root.geometry("+%d+%d" % (x, y))
-
+	screen_width = root.winfo_screenwidth()
+	screen_height = root.winfo_screenheight()
+	window_width = root.winfo_width()
+	window_height = root.winfo_height()
+	x = screen_width/2 - window_width/2
+	y = screen_height/2 - window_height/2
+	root.geometry('%dx%d+%d+%d' %  (window_width,window_height, x, y))
 	root.deiconify()
 
 
@@ -33,14 +34,15 @@ def center(root):
 if __name__ == '__main__':
 	root = Tk()
 
-	#center(root)
-	
-	root.title("Sky Chess")
+	root.title("Ensemble Chess")
 	root.protocol("WM_DELETE_WINDOW",quit)
 
 	the_canvas = Canvas(root,width=600,height=600,bg="gray10")
 	the_canvas.pack()
+	root.update_idletasks()
 
+	center(root)
+	
 	root.resizable(False, False)
 
 	#Bindings
