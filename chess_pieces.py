@@ -70,18 +70,21 @@ class Pawn:
 		self.en_passant = 0
 		self.moved = False
 		self.location = on_canvas_pos(current)
+		self.done = True
 
 
 	def valid_placements(self, col, row, board, look_ahead = True):
 		placements = []
 
+		if row in (0,7):
+			return placements
+
 		forward = 1
 		if self.color == black:
 			forward = -1
 		times = 1
-		if row == 1 or row == 6:
+		if not self.moved:
 			times = 2
-
 
 		nrow = row + forward
 		if 0 <= col + 1 <= 7 and board[col + 1][nrow] != None and board[col + 1][nrow].color != self.color:

@@ -7,8 +7,8 @@ import sys
 import time
 import math
 
-CASTLING = 1
-EN_PASSANT = 2
+#CASTLING = 1
+#EN_PASSANT = 2
 
 
 class ChessModel:
@@ -122,16 +122,6 @@ class ChessModel:
 			self.selection_placements = self.board[scol][srow].valid_placements(scol, srow, self.board)
 			play_select()
 
-	"""
-	def get_move_information(self, piece, start, end):
-		scol, srow = start
-		ecol, erow = end
-		if type(piece)
-		if abs(erow - srow) == 2:
-			return CASTLING
-	"""
-
-
 
 
 
@@ -150,17 +140,19 @@ class ChessModel:
 		# POST MOVE ANALYSIS #
 		self.check_castle()
 		self.check_en_passant(captured)
+		self.check_upgrade()
 		self.check_end_game()
 
 		play_move_sound(moved_piece, self.moveType)
 
-		self.reset()
+		self.new_play()
 		self.current_player = self.opp()  # switch current player
 
 		# END OF THE PLAY #
 
 
-	def reset(self):
+
+	def new_play(self):
 		self.selection, self.destination = None, None
 		self.moveType = 0
 
@@ -177,6 +169,31 @@ class ChessModel:
 
 
 
+	def check_upgrade(self):
+		dcol,drow = self.destination
+		piece = self.board[dcol][drow]
+
+		if type(piece) is Pawn and drow in (0,7): # upgrade
+			#self.root.after(2000, chess_view.ChessGame.wait_for_transition, piece, self.destination)
+			if drow == 0: # black pawn
+				#self.root(after(self.create_upgrade()
+				self.delay(100, self.create_piece, black, self.destination)
+			else: # white pawn
+				self.delay(100, self.create_piece, white, self.destination)
+			
+
+
+	def delay(self, amt, function, *arg):
+		self.root.after(amt, function, *arg)
+
+	def create_piece(self, color, place):
+		col, row = place
+		self.board[col][row] = Queen(color, (col,row))
+		self.board[col][row].moved = True
+
+
+	
+
 
 	def check_castle(self):
 		scol,srow = self.selection
@@ -189,9 +206,9 @@ class ChessModel:
 			if abs(travel) > 1:
 				self.moveType = CASTLE
 				print(self.moveType)
-				if travel < 0: # top rook
+				if travel < 0: # rightside rook
 					rcol, nrcol = 7, 5
-				else: # bottom rook
+				else:				 # leftside rook
 					rcol, nrcol = 0, 3
 
 				#self.move((rcol,drow), (nrcol,drow))

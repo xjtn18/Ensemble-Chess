@@ -33,7 +33,8 @@ pg.mixer.init(freq, bitsize, channels, buffer)
 
 
 #All Sounds
-s_rain = MySound(pg.mixer.Sound('sounds/rain.wav'), 1, 0.3, -1)
+
+s_rain = MySound(pg.mixer.Sound('sounds/rain.wav'), 1, 0.05, -1)
 s_amb = MySound(pg.mixer.Sound('sounds/amb.wav'), 2, 0.8, -1)
 
 s_beat = MySound(pg.mixer.Sound('sounds/beat.wav'), 3, 1, -1)
@@ -50,18 +51,18 @@ s_queen_move = MySound(pg.mixer.Sound('sounds/queen_move.wav'), 6, 1, 0)
 s_queen_power_move = MySound(pg.mixer.Sound('sounds/queen_power_move.wav'), 6, 1, 0)
 s_bishop_move = MySound(pg.mixer.Sound('sounds/bishop_move.wav'), 6, 1, 0)
 s_rook_move = MySound(pg.mixer.Sound('sounds/rook_move.wav'), 6, 1, 0)
-#s_king_move = MySound(pg.mixer.Sound('sounds/king_move.wav'), 6, 1, 0)
-#s_castle = MySound(pg.mixer.Sound('sounds/castle.wav'), 6, 1, 0)
+s_king_move = MySound(pg.mixer.Sound('sounds/king_move.wav'), 6, 1, 0)
+s_castle = MySound(pg.mixer.Sound('sounds/castle_move.wav'), 6, 1, 0)
 
 s_attack = MySound(pg.mixer.Sound('sounds/attack.wav'), 7, 1, 0)
 s_place = MySound(pg.mixer.Sound('sounds/place.wav'), 7, 1, 0)
 s_cancel = MySound(pg.mixer.Sound('sounds/cancel.wav'), 7, 0.4, 0)
 
-
-
-#s_rain.play()
+s_rain.play()
 s_amb.play()
 s_beat.play()
+
+
 
 
 def play_select():
@@ -93,14 +94,15 @@ def play_move_sound(piece, moveType):
 	elif type(piece) is King:
 		if moveType == CASTLE:
 			pass
-			#s_castle.play()
+			s_castle.play()
 		else:
 			pass
-			#s_king_move.play()
+			s_king_move.play()
 	
 
 	#exec(f's_p{MySound.sps + 1}.play()')
 	#MySound.sps = (MySound.sps + 1) % 4
+
 
 
 

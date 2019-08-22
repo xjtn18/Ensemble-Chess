@@ -43,21 +43,17 @@ if __name__ == '__main__':
 
 	root.resizable(False, False)
 
-
 	#Bindings
 	the_canvas.bind("<ButtonPress>", lambda event : game.gamestate.mouse_click(event.x,event.y))
 	my_motion = Motion()
 	the_canvas.bind('<Motion>', my_motion.motion)
 
-
 	game = ChessGame(my_motion, root)
-
 
 	# Main loop
 	def repeater(root):
 		game.display(the_canvas)
 		root.after(1,repeater,root)
-
 
 	repeater(root)
 	root.mainloop()

@@ -2,9 +2,11 @@ from chess_model import *
 from PIL.ImageTk import PhotoImage
 from PIL import Image
 import math
+import time
 
 
 TRANSITION_RATE = 35
+FRICTION = 100
 
 
 
@@ -205,20 +207,24 @@ class ChessGame:
 		dcol, drow = end
 		slope = ChessGame.get_slope(start, end)
 		final = (dcol*sh + sh/2 - 2, w - (drow*sh + sh/2))
+		#print("IN TRANSITION:", piece.location, final, sep="       ")
+		#print("IN TRANSITION:", piece)
 		sma = ChessGame.get_max_axis(slope)
 		direction = ChessGame.calc_direction(piece.location, final)
 		ChessGame.loop(piece, sma, final, slope, direction, TRANSITION_RATE, root)
 
 	@staticmethod
 	def loop(piece, sma, final, slope, direction, rate, root):
+		piece.done = False
 		for i in range(rate):
-			distance = floor(ChessGame.distance(piece.location, final))
+			distance = ChessGame.distance(piece.location, final)
 			if distance <= sma:
-				play_place()
+				#play_place()
 				piece.location = final
+				piece.done = True
 				return
 
-			ChessGame.update(piece, slope, direction)
+			ChessGame.update(piece, slope, direction, distance/FRICTION)
 			#rate = floor(rate/(rate/5)/distance + 10)
 		root.after(1, ChessGame.loop, piece, sma, final, slope, direction, rate, root)
 
@@ -230,13 +236,26 @@ class ChessGame:
 		return res
 
 	@staticmethod
-	def update(piece, slope, direction):
+	def update(piece, slope, direction, speed):
 		p1,p2 = piece.location
 		s1,s2 = slope
 		s1 = abs(s1)
 		d1,d2 = direction
-		piece.location = (p1 + s2*d1, p2 + s1*d2)
+		piece.location = (p1 + s2*d1*speed, p2 + s1*d2*speed)
 
+	@staticmethod
+	def wait_for_transition(piece, destination):
+		sh = ChessModel.sh
+		w = ChessModel.w
+		dcol,drow = destination
+		final = (dcol*sh + sh/2 - 2, w - (drow*sh + sh/2))
+		time.sleep(1)
+		#print("hey", dcol, drow)
+		#print(piece.location, final, sep="       ")
+		#print(piece)
+		if piece.done:
+			return
+		ChessGame.wait_for_transition(piece, destination)
 
 
 
