@@ -138,6 +138,7 @@ class ChessModel:
 		moved_piece = self.board[dcol][drow]
 		
 		# POST MOVE ANALYSIS #
+		self.check_double_step(moved_piece, srow, drow)
 		self.check_castle()
 		self.check_en_passant(captured)
 		self.check_upgrade()
@@ -192,7 +193,10 @@ class ChessModel:
 		self.board[col][row].moved = True
 
 
-	
+	def check_double_step(self, piece, srow, drow):
+		if type(piece) is Pawn and abs(srow - drow) == 2:
+			self.moveType = DOUBLE_STEP
+
 
 
 	def check_castle(self):

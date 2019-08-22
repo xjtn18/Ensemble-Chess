@@ -4,6 +4,7 @@ from chess_pieces import Pawn, Knight, Rook, Bishop, Queen, King
 
 CASTLE = 1
 EN_PASSANT = 2
+DOUBLE_STEP = 3
 
 
 class MySound:
@@ -44,7 +45,7 @@ s_bell = MySound(pg.mixer.Sound('sounds/bell.wav'), 5, 1, 0)
 
 # Piece move sounds
 s_pawn_move = MySound(pg.mixer.Sound('sounds/pawn_move.wav'), 6, 1, 0)
-s_pawn_2_move = MySound(pg.mixer.Sound('sounds/pawn_2_move.wav'), 6, 1, 0)
+s_double_step = MySound(pg.mixer.Sound('sounds/pawn_2_move.wav'), 6, 1, 0)
 s_en_passant_move = MySound(pg.mixer.Sound('sounds/en_passant_move.wav'), 6, 1, 0)
 s_knight_move = MySound(pg.mixer.Sound('sounds/knight_move.wav'), 6, 1, 0)
 s_queen_move = MySound(pg.mixer.Sound('sounds/queen_move.wav'), 6, 1, 0)
@@ -82,7 +83,13 @@ def play_swift():
 
 def play_move_sound(piece, moveType):
 	if type(piece) is Pawn:
-		s_pawn_move.play() if not moveType == EN_PASSANT else s_en_passant_move.play()
+		s_pawn_move.play()
+		if moveType == EN_PASSANT:
+			s_en_passant_move.play()
+		elif moveType == DOUBLE_STEP:
+			s_double_step.play()
+		else:
+			s_pawn_move.play()
 	elif type(piece) is Knight:
 		s_knight_move.play()
 	elif type(piece) is Bishop:
@@ -93,10 +100,8 @@ def play_move_sound(piece, moveType):
 		s_queen_move.play()
 	elif type(piece) is King:
 		if moveType == CASTLE:
-			pass
 			s_castle.play()
 		else:
-			pass
 			s_king_move.play()
 	
 
